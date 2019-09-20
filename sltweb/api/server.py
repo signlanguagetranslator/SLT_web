@@ -54,6 +54,13 @@ def Saveimage():
     image = request.get_json()['image'].split(',')
     image = base64.decodestring(bytes((image[0:])[1],'utf-8'))
     fileName = str(request.get_json()['fileName'])
+    print(fileName)
+    if(int( fileName) > 25):
+        jsonresult = {
+            'result' : False
+        }
+        resJson = json.dumps(jsonresult)
+        return resJson
     image = np.fromstring(image,dtype=np.uint8)
     imagePath = "./image/" + fileName + ".jpeg"
 
@@ -99,7 +106,8 @@ def Chat():
     sentence = TranswithEmotion(sentence, emotion)
     ans = detect_intent_texts('restobot-441ff', '16080fa56f1a4da9950a2b26c04e4d31', sentence, 'en')
     jsonresult = {
-        'response' : ans
+        'response' : ans,
+        'sentence' : sentence
     }
     resJson = json.dumps(jsonresult)
     print(resJson)

@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
 import Webcam from 'react-webcam'
+import { timeout } from "q";
 
 class App extends Component {
   constructor(props){
@@ -23,7 +24,7 @@ class App extends Component {
       height: 720,
       facingMode: "user"
     };
-    this.setState = this.setState.bind(this)
+    // this.display = this.display.bind(this);
   }
 
   buttonClick(){
@@ -33,6 +34,12 @@ class App extends Component {
     else if (this.state.state === 'Predict') this.Predict();
   }
 
+  // display(){
+  //   return new Promise(function (){
+  //     for(var i = 3; i > 0; --i) setTimeout(() => {this.setState({delay: i})}, 1000); 
+  //   });
+  // }
+
   Wakeword() {
     clearInterval(this.interval);
     const imageSrc = this.webcamRef.current.getScreenshot();
@@ -40,17 +47,22 @@ class App extends Component {
       method: 'POST',
       body: JSON.stringify({
         image: imageSrc
-      }),
+      }), 
       headers: {
         "Content-type": "application/json"
       }
-    }).then(response => response.json())
+    }).then( (response) => response.json())
     .then( (responseData)=>{
           if(responseData.result === "b'start\\n'"){
-            this.interval = setInterval(this.buttonClick, 60);
-            if (this.state.emotion == "" ){
-              this.setState({MeState: "Recognizing",state: 'SaveImage',count : 0, sentence: "",delay: null});
-            } else this.setState({MeState: "Recognizing",state: 'SaveImage',count : 0,delay: null});
+            this.setState({delay: 3})
+            setTimeout(() => {this.setState({delay: 2})}, 1000);   
+            setTimeout(() => {this.setState({delay: 1})}, 2000);   
+            setTimeout(() => {
+              this.interval = setInterval(this.buttonClick, 60);
+              if (this.state.emotion == "" ){
+                this.setState({MeState: "Recognizing",state: 'SaveImage',count : 0, sentence: "",delay: null});
+              } else this.setState({MeState: "Recognizing",state: 'SaveImage',count : 0,delay: null});
+            }, 3000); 
           }
           else if(responseData.result === "b'finish\\n'"){
             this.loader.style.display = "block";
@@ -71,6 +83,7 @@ class App extends Component {
             .then( (responseData)=>{
               this.setState({
                 AI: responseData.response,
+                sentence: responseData.sentence,
                 emotion : ""
               });
               this.interval = setInterval(this.buttonClick, 300);
@@ -147,7 +160,7 @@ class App extends Component {
       <div id ="middle" class="split-middle">
         <h1>You</h1>
         { this.state.state === "Wakeword" ? <h1 style={{background: 'black', color: 'white'}}> Waiting </h1> : null}
-        { this.state.delay !== null ? <h1 style={{background: 'black', color: 'white'}}>{this.state.delay} </h1> : null}
+        { this.state.delay !== null ? <h1 style={{background: 'red', color: 'white'}}>{this.state.delay} </h1> : null}
         { this.state.state === "SaveImage" ? <div><h1 style={{background: 'red', color: 'white'}}>Recoding</h1> <h1 style={{background: 'red', color: 'white'}}>Frame : {this.state.count}</h1></div> : null}
         { this.state.state === "Predict" ? <h1 style={{background: 'green', color: 'white'}}> Recognizing </h1> : null}
         <h1>{this.state.sentence}</h1>

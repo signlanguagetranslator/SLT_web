@@ -9,15 +9,16 @@ KEY = '9b3e66f7f6db4361b2e1073ed554a5f9'
 CF.Key.set(KEY)
 BASE_URL = 'https://faceapi125.cognitiveservices.azure.com/face/v1.0'
 CF.BaseUrl.set(BASE_URL)
-cntEmo = np.zeros(8, dtype=int)
 
-facelist = ['anger', 'contempt', 'disgust', 'fear', 'happiness', 'neutral', 'sadness', 'surprise']
+
+
 
 
 
 # 프레임마다 실행
-def faceDetection(imagePath, DetectFaceSnd):
+def faceDetection(imagePath, DetectFaceSnd, cntEmo, facelist):
     faces = CF.face.detect(imagePath, face_id=False, attributes='emotion')
+    #print(faces)
     # 표정 평균내기.
     maxEmo = 0
     maxVal = 0
@@ -44,17 +45,21 @@ def faceDetection(imagePath, DetectFaceSnd):
 
         cntEmo[maxEmo] += 1
         maxVal = 0
+    return cntEmo, facelist
 
 # 문장 인식 전에 마지막으로 한 번 실행
 def FinalEmotion(Directory):
-    faceDetection(Directory + '1.jpeg', False)
-    faceDetection(Directory + '5.jpeg', True)
-    faceDetection(Directory + '9.jpeg', True)
-    faceDetection(Directory + '13.jpeg', True)
-    faceDetection(Directory + '17.jpeg', True)
-    faceDetection(Directory + '21.jpeg', True)
-    faceDetection(Directory + '25.jpeg', True)
+    cntEmo = np.zeros(8, dtype=int)
+    facelist = ['anger', 'contempt', 'disgust', 'fear', 'happiness', 'neutral', 'sadness', 'surprise']
+    cntEmo, facelist = faceDetection(Directory + '1.jpeg', False, cntEmo, facelist)
+    cntEmo, facelist = faceDetection(Directory + '5.jpeg', True, cntEmo, facelist)
+    cntEmo, facelist = faceDetection(Directory + '9.jpeg', True, cntEmo, facelist)
+    cntEmo, facelist = faceDetection(Directory + '13.jpeg', True, cntEmo, facelist)
+    cntEmo, facelist = faceDetection(Directory + '17.jpeg', True, cntEmo,facelist)
+    cntEmo, facelist = faceDetection(Directory + '21.jpeg', True, cntEmo, facelist)
+    cntEmo, facelist = faceDetection(Directory + '25.jpeg', True, cntEmo, facelist)
     
+    #print(cntEmo)
     maxVal = 0
     res = 'anger'
     i = 0

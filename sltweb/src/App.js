@@ -12,9 +12,9 @@ class App extends Component {
       AI : null,
       count : 0,
       sentence : "",
-      delay: null
+      delay: null,
+      emotion : ""
     }
-    this.emotion = "";
     this.url = 'http://localhost:5000';
     this.webcamRef = React.createRef(null);
     this.buttonClick = this.buttonClick.bind(this);
@@ -48,7 +48,7 @@ class App extends Component {
     .then( (responseData)=>{
           if(responseData.result === "b'start\\n'"){
             this.interval = setInterval(this.buttonClick, 60);
-            if (this.emotion == null ){
+            if (this.state.emotion == "" ){
               this.setState({MeState: "Recognizing",state: 'SaveImage',count : 0, sentence: "",delay: null});
             } else this.setState({MeState: "Recognizing",state: 'SaveImage',count : 0,delay: null});
           }
@@ -62,7 +62,7 @@ class App extends Component {
               method: 'POST',
               body: JSON.stringify({
                 sentence: this.state.sentence,
-                emotion : this.emotion
+                emotion : this.state.emotion
               }),
               headers: {
                 "Content-type": "application/json"
@@ -71,8 +71,8 @@ class App extends Component {
             .then( (responseData)=>{
               this.setState({
                 AI: responseData.response,
+                emotion : ""
               });
-              this.emotion = null;
               this.interval = setInterval(this.buttonClick, 300);
             })  
           } else{
@@ -111,7 +111,7 @@ class App extends Component {
     fetch(this.url + "/Predict", {
       method: 'POST',
       body: JSON.stringify({
-        emotion: this.emotion
+        emotion: this.state.emotion
       }),
       headers: {
         "Content-type": "application/json"
@@ -123,7 +123,7 @@ class App extends Component {
           count: 0,
           sentence : this.state.sentence + " " + responseData.word
         })
-        this.emotion = responseData.emotion;
+        this.state.emotion = responseData.emotion;
         this.interval = setInterval(this.buttonClick, 300);
       }
     );
@@ -151,7 +151,7 @@ class App extends Component {
         { this.state.state === "SaveImage" ? <div><h1 style={{background: 'red', color: 'white'}}>Recoding</h1> <h1 style={{background: 'red', color: 'white'}}>Frame : {this.state.count}</h1></div> : null}
         { this.state.state === "Predict" ? <h1 style={{background: 'green', color: 'white'}}> Recognizing </h1> : null}
         <h1>{this.state.sentence}</h1>
-        <h1>{this.emotion}</h1>
+        <h1 style={{background: 'blue', color: 'white'}}>{this.state.emotion}</h1>
       </div>
       <div class="split-right">
           <h1> AI </h1>

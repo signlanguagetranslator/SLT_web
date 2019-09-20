@@ -7,11 +7,13 @@ import cv2
 import time
 import numpy as np
 import glob 
-
 import os
+
 from sign import signRecognition
 from Wakeword import wakeWordDetection
 from handsegment import handsegment
+from chat import detect_intent_texts
+from Emotion import FinalEmotion, TranswithEmotion
 
 # cross 해결
 app = Flask(__name__)
@@ -25,8 +27,6 @@ def hello_world():
 
 @app.route('/Wakeword',  methods=['POST'])
 def WakeWord():
-    print( "/Wakeword  <- ")
-
     image = request.get_json()['image']
     if( image == None):
         resJson = json.dumps({'result' : False})
@@ -46,13 +46,11 @@ def WakeWord():
         'result' : answer
     }
     resJson = json.dumps(jsonresult)
-    print("/Wakeword  ->")
     print(resJson)
     return resJson
 
 @app.route('/SaveImage',  methods=['POST'])
 def Saveimage():
-    print( "/SaveImage  <- ")
     image = request.get_json()['image'].split(',')
     image = base64.decodestring(bytes((image[0:])[1],'utf-8'))
     fileName = str(request.get_json()['fileName'])
@@ -64,34 +62,50 @@ def Saveimage():
 
     frame = cv2.imread(imagePath)
     frame = handsegment(frame)
+    frame = cv2.resize(frame, dsize=(1920, 1080), interpolation=cv2.INTER_AREA)
     cv2.imwrite('./masking/candy/'+fileName + '.jpg', frame)
     jsonresult = {
         'result' : True
     }
     resJson = json.dumps(jsonresult)
-    print("/SaveImage  ->")
     print(resJson)
     return resJson
 
-@app.route('/Predict',  methods=['GET'])
+@app.route('/Predict',  methods=['POST'])
 def Predict():
-    print( "/Predict  <- ")
     start = time.time()
+    print(request.get_json())
+    emotion = request.get_json()['emotion']
+
+    if emotion == "":
+        emotion = FinalEmotion('./image/')
     word = signRecognition('./masking')
-    
-    # for i in glob.glob("./masking/candy/*.jpg"):
-    #     os.remove(i)
-    
-    # for i in glob.glob("./image/*.jpeg"):
-    #     os.remove(i)
     jsonresult = {
-        'word' : word
+        'word' : word,
+        'emotion': emotion
     }
+    
     resJson = json.dumps(jsonresult)
-    print("/Predict  ->")
     print(resJson)
     print(time.time()-start)
     return resJson
+
+
+@app.route('/Chat',  methods=['POST'])
+def Chat():
+    start = time.time()
+    sentence = request.get_json()['sentence']
+    emotion = request.get_json()['emotion']
+    sentence = TranswithEmotion(sentence, emotion)
+    ans = detect_intent_texts('restobot-441ff', '16080fa56f1a4da9950a2b26c04e4d31', sentence, 'en')
+    jsonresult = {
+        'response' : ans
+    }
+    resJson = json.dumps(jsonresult)
+    print(resJson)
+    print(time.time()-start)
+    return resJson
+
 
 if __name__ == '__main__':
     app.run(host='localhost', port = 5000, debug = True)

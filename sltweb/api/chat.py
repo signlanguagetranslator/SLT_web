@@ -30,6 +30,7 @@ def detect_intent_texts(project_id, session_id, texts, language_code):
     print('Fulfillment text: {}\n'.format(
         response.query_result.fulfillment_text))
 
+    return response.query_result.fulfillment_text
 
-if __name__ == "__main__":
-    detect_intent_texts('restobot-441ff', '16080fa56f1a4da9950a2b26c04e4d31', "Jane", 'en')
+if __name__=='__main__':
+    detect_intent_texts('restobot-441ff', '16080fa56f1a4da9950a2b26c04e4d31', "date?", 'en')

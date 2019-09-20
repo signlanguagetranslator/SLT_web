@@ -48,7 +48,7 @@ code {
   height: 100%;
   left:0;
   width: 33%;
-  position: absolute;
+  position: fixed;
   left: 33.3%;
   z-index: 1;
   top: 0;

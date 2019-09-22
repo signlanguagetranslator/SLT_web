@@ -81,17 +81,17 @@ def Saveimage():
 @app.route('/Predict',  methods=['POST'])
 def Predict():
     start = time.time()
-    print(request.get_json())
     emotion = request.get_json()['emotion']
 
     if emotion == "":
         emotion = FinalEmotion('./image/')
+
     word = signRecognition('./masking')
     jsonresult = {
         'word' : word,
         'emotion': emotion
-    }
-    
+    }   
+     
     resJson = json.dumps(jsonresult)
     print(resJson)
     print(time.time()-start)
